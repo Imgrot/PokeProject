@@ -3,11 +3,14 @@ import { useRoute } from 'vue-router'
 import BarChart from '../components/BarChart.vue';
 import RadarChart from '../components/RadarChart.vue';
 import { reactive, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { getTypeColor } from '../components/TypeColor.js'
 
 const state = reactive({
     pokemon: null,
     stats: computed(() => filterStats()),
-    types: computed(() => filterTypes())
+    types: computed(() => filterTypes()),
+    abilities: [],
+    movesDetails: [],
 })
 
 function filterStats() {
@@ -20,55 +23,47 @@ function filterTypes() {
         return state.pokemon.types.map(type => type.type.name)
     }
 }
-function filterAbility() {
-    if (state.pokemon) {
-        return state.pokemon.ability.map(type => ability.name)
-    }
-}
+
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 const route = useRoute()
-const { pokemon, stats, types, ability } = toRefs(state)
+const { pokemon, stats, types, abilities, movesDetails } = toRefs(state)
 
 const getData = async () => {
-    await fetch(`https://pokeapi.co/api/v2/pokemon/${route.params.id}`)
-        .then(res => res.json())
-        .then(data => {
-            state.pokemon = data
-        })
-}
+    try {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${route.params.id}`);
+        const data = await response.json();
+
+        state.pokemon = data;
+
+        const abilities = data.abilities.map((ability) => ability.ability.name);
+        state.abilities = abilities;
+
+        const movesDetailsPromises = data.moves.map(async (move) => {
+            const moveResponse = await fetch(move.move.url);
+            const moveData = await moveResponse.json();
+            return {
+                type: moveData.type.name,
+                category: moveData.damage_class.name,
+                name: moveData.name,
+                power: moveData.power || '-',
+                pp: moveData.pp,
+            };
+        });
+
+        const movesDetails = await Promise.all(movesDetailsPromises);
+        state.movesDetails = movesDetails;
+    } catch (error) {
+        console.error('Error al obtener los datos del Pokémon:', error);
+    }
+};
+
 
 watch(route, () => {
     getData()
 })
-
-function getTypeColor(type) {
-        const typeColors = {
-            'water': 'bg-blue-500',
-            'fire': 'bg-red-500',
-            'grass': 'bg-green-500',
-            'electric': 'bg-yellow-500',
-            'ice': 'bg-cyan-500',
-            'fighting': 'bg-orange-500',
-            'poison': 'bg-purple-500',
-            'ground': 'bg-brown-800',
-            'flying': 'bg-indigo-500',
-            'psychic': 'bg-pink-500',
-            'bug': 'bg-lime-500',
-            'rock': 'bg-gray-500',
-            'ghost': 'bg-indigo-800',
-            'steel': 'bg-gray-400',
-            'dragon': 'bg-indigo-900',
-            'dark': 'bg-gray-900',
-            'fairy': 'bg-pink-300',
-            'normal': 'bg-gray-300',
-        };
-
-        return typeColors[type.toLowerCase()] || 'bg-gray-300';
-    }
-
 
 onMounted(() => {
     getData()
@@ -98,11 +93,46 @@ const changeChart = () => {
                 <div class="flex flex-wrap">
                     <div class="flex-1 grid place-items-center">
                         <img class="w-40 h-48" :src="pokemon.sprites.front_default" :alt="`Imagen de ${pokemon.name}`">
+                        <img class="w-40 h-48" :src="pokemon.sprites.back_default" :alt="`Imagen de ${pokemon.name}`">
                     </div>
                     <div class="flex-1">
-                        <button @click="changeChart()">{{ isBarChart ? 'Radar' : 'Bar' }}</button>
+                        <button class="py-1 px-2 shadow-md rounded-full text-black font-semibold mr-2 mt-3 bg-blue-400"
+                            @click="changeChart()">
+                            {{ isBarChart ? 'Switch to Radar' : 'Switch to Bar' }}</button>
                         <component :is="isBarChart ? BarChart : RadarChart" :stats="stats" />
                     </div>
+                </div>
+
+                <div class="mt-4">
+                    <h2 class="text-lg font-semibold">Abilities:</h2>
+                    <ul>
+                        <li v-for="ability in abilities" :key="ability">
+                            # {{ capitalizeFirstLetter(ability) }}
+                        </li>
+                    </ul>
+                </div>
+                <div class="mt-4">
+                    <h2 class="text-lg font-semibold">Moves:</h2>
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-black">
+                        <thead class="thead-inverse">
+                            <tr>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Name</th>
+                                <th>Power</th>
+                                <th>PP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="move in movesDetails" :key="move.name">
+                                <td>{{ move.type }}</td>
+                                <td>{{ move.category }}</td>
+                                <td>{{ move.name }}</td>
+                                <td>{{ move.power }}</td>
+                                <td>{{ move.pp }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
