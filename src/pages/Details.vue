@@ -28,6 +28,18 @@ function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function formatString(input) {
+    const words = input.split('-');
+    const formattedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
+    const result = formattedWords.join(' ');
+    return result;
+}
+
+// Ejemplo de uso:
+const inputString = "mega-punch";
+const formattedString = formatString(inputString);
+console.log(formattedString); // Output: "Mega Punch"
+
 const route = useRoute()
 const { pokemon, stats, types, abilities, movesDetails } = toRefs(state)
 
@@ -107,7 +119,7 @@ const changeChart = () => {
                     <h2 class="text-lg font-semibold">Abilities:</h2>
                     <ul>
                         <li v-for="ability in abilities" :key="ability">
-                            # {{ capitalizeFirstLetter(ability) }}
+                            # {{ formatString(ability) }}
                         </li>
                     </ul>
                 </div>
@@ -125,9 +137,9 @@ const changeChart = () => {
                         </thead>
                         <tbody>
                             <tr v-for="move in movesDetails" :key="move.name">
-                                <td>{{ move.type }}</td>
-                                <td>{{ move.category }}</td>
-                                <td>{{ move.name }}</td>
+                                <td>{{ formatString(move.type) }}</td>
+                                <td>{{ formatString(move.category) }}</td>
+                                <td>{{ formatString(move.name) }}</td>
                                 <td>{{ move.power }}</td>
                                 <td>{{ move.pp }}</td>
                             </tr>
