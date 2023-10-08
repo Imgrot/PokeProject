@@ -35,11 +35,6 @@ function formatString(input) {
     return result;
 }
 
-// Ejemplo de uso:
-const inputString = "mega-punch";
-const formattedString = formatString(inputString);
-console.log(formattedString); // Output: "Mega Punch"
-
 const route = useRoute()
 const { pokemon, stats, types, abilities, movesDetails } = toRefs(state)
 
