@@ -18,7 +18,6 @@ const {  name, filterPokemon } = toRefs(state)
 fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
     .then(res => res.json())
     .then(data => {
-        console.log(data)
         data.results.forEach((element, index) => {
             const pokemon = {
                 ...element,

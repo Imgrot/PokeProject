@@ -7,7 +7,7 @@ export function getTypeColor(type) {
         'ice': 'bg-cyan-500',
         'fighting': 'bg-orange-500',
         'poison': 'bg-purple-500',
-        'ground': 'bg-brown-800',
+        'ground': 'bg-brown-500',
         'flying': 'bg-indigo-500',
         'psychic': 'bg-pink-500',
         'bug': 'bg-lime-500',

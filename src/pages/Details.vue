@@ -4,6 +4,8 @@ import BarChart from '../components/BarChart.vue';
 import RadarChart from '../components/RadarChart.vue';
 import { reactive, toRefs, computed, ref, onMounted, watch } from 'vue'
 import { getTypeColor } from '../components/TypeColor.js'
+import MoveTable from '../components/MoveTable.vue'
+import { formatString, capitalizeFirstLetter } from '../components/formatString.js'
 
 const state = reactive({
     pokemon: null,
@@ -22,17 +24,6 @@ function filterTypes() {
     if (state.pokemon) {
         return state.pokemon.types.map(type => type.type.name)
     }
-}
-
-function capitalizeFirstLetter(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function formatString(input) {
-    const words = input.split('-');
-    const formattedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
-    const result = formattedWords.join(' ');
-    return result;
 }
 
 const route = useRoute()
@@ -118,29 +109,7 @@ const changeChart = () => {
                         </li>
                     </ul>
                 </div>
-                <div class="mt-4">
-                    <h2 class="text-lg font-semibold">Moves:</h2>
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-black">
-                        <thead class="thead-inverse">
-                            <tr>
-                                <th>Type</th>
-                                <th>Category</th>
-                                <th>Name</th>
-                                <th>Power</th>
-                                <th>PP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="move in movesDetails" :key="move.name">
-                                <td>{{ formatString(move.type) }}</td>
-                                <td>{{ formatString(move.category) }}</td>
-                                <td>{{ formatString(move.name) }}</td>
-                                <td>{{ move.power }}</td>
-                                <td>{{ move.pp }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <MoveTable :moves="movesDetails" />
             </div>
         </div>
         <div v-else>
